@@ -1,28 +1,58 @@
 'use client'
 
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Header } from '@/components/header'
-import { Footer } from '@/components/footer'
-import { SportCard } from '@/components/sport-card'
-import { VenueCard } from '@/components/venue-card'
-import { mockVenues } from '@/lib/mock-data'
-import type { SportType } from '@/lib/types'
-import { sportTypeLabels } from '@/lib/types'
-import { Search, Calendar, CreditCard, CheckCircle, ArrowLeft, Star } from 'lucide-react'
+import {Button} from '@/components/ui/button'
+import {Header} from '@/components/header'
+import {Footer} from '@/components/footer'
+import {SportCard} from '@/components/sport-card'
+import {VenueCard} from '@/components/venue-card'
+import {mockVenues} from '@/lib/mock-data'
+import type {SportType} from '@/lib/types'
+import {sportTypeLabels} from '@/lib/types'
+import {ArrowLeft, Calendar, CheckCircle, CreditCard, Search} from 'lucide-react'
+import {useEffect, useState} from "react";
+import {venuesApi} from "@/app/api/services/venues.api"
 
 // Count venues by sport
-const sportCounts = Object.keys(sportTypeLabels).reduce(
-    (acc, sport) => {
-        acc[sport as SportType] = mockVenues.filter((v) => v.sportType === sport && v.isActive).length
-        return acc
-    },
-    {} as Record<SportType, number>
-)
+// const sportCounts = Object.keys(sportTypeLabels).reduce(
+//     (acc, sport) => {
+//         acc[sport as SportType] = mockVenues.filter((v) => v.sportType === sport && v.isActive).length
+//         return acc
+//     },
+//     {} as Record<SportType, number>
+// )
 
 export default function HomePage() {
+
+    const [loading, setLoading] = useState(true)
+    const [sportCounts, setSportCounts] = useState<Record<SportType, number>>({} as Record<SportType, number>)
+    // const [featuredVenues, setFeaturedVenues] = useState([])
     const featuredVenues = mockVenues.filter((v) => v.isActive).slice(0, 4)
 
+    useEffect(() => {
+        const fetchCounts = async () => {
+            try {
+                const response = await venuesApi.getVenuesDashboard()
+                const countsData = response.data.data
+
+                const counts: Record<SportType, number> = {} as Record<SportType, number>
+                (Object.keys(sportTypeLabels) as SportType[]).forEach((sport) => {
+                    const found = countsData.find((item: any) => item.type === sport)
+                    counts[sport] = found ? found.total : 0
+                })
+
+                setSportCounts(counts)
+            } catch (err) {
+                console.error(err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchCounts()
+    }, [])
+
+    console.log(featuredVenues)
     return (
         <div className="min-h-screen flex flex-col bg-background">
             <Header />
@@ -121,7 +151,11 @@ export default function HomePage() {
 
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
                             {(Object.keys(sportTypeLabels) as SportType[]).map((sport, index) => (
-                                <div key={sport} className="animate-scale-in opacity-0" style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}>
+                                <div
+                                    key={sport}
+                                    className="animate-scale-in opacity-0"
+                                    style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}
+                                >
                                     <SportCard sportType={sport} venueCount={sportCounts[sport]} />
                                 </div>
                             ))}

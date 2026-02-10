@@ -5,25 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table'
+
 import { mockReservations, mockVenues, mockUsers, formatPrice, formatPersianDate } from '@/lib/mock-data'
 import { reservationStatusLabels, paymentStatusLabels, type ReservationStatus } from '@/lib/types'
 import { useAuth } from '@/lib/auth-context'
 import { Search, CheckCircle, XCircle, Eye } from 'lucide-react'
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@radix-ui/react-select";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 
 const statusColors: Record<string, string> = {
     pending: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',

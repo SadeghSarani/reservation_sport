@@ -16,9 +16,9 @@ import { Menu, X, User, LogOut, LayoutDashboard, Calendar, Zap } from 'lucide-re
 import { ThemeToggle } from '@/components/theme-toggle'
 
 export function Header() {
-    const { user, logout, switchRole } = useAuth()
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
+    const { user, logout } = useAuth()
+    console.log(user)
     const getDashboardLink = () => {
         if (!user) return '/login'
         if (user.role === 'superadmin') return '/superadmin'

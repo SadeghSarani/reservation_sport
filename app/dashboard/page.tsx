@@ -6,14 +6,15 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { mockReservations, mockVenues, formatPrice, formatPersianDate } from '@/lib/mock-data'
+import {mockReservations, mockVenues, formatPrice, formatPersianDate, mockUsers} from '@/lib/mock-data'
 import { reservationStatusLabels, sportTypeLabels } from '@/lib/types'
 import { useAuth } from '@/lib/auth-context'
 import { Calendar, CreditCard, Clock, MapPin, ArrowLeft, User } from 'lucide-react'
+import {useState} from "react";
 
 export default function UserDashboard() {
     const router = useRouter()
-    const { user } = useAuth()
+    const [user, setUser] = useState<User | null>(mockUsers[3])
 
     if (!user) {
         router.push('/login')

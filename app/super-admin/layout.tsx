@@ -8,6 +8,8 @@ import { AdminSidebar } from '@/components/admin-sidebar'
 import { Menu } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import {User} from "@/lib/types";
+import {mockUsers} from "@/lib/mock-data";
 
 export default function SuperAdminLayout({
                                              children,
@@ -15,7 +17,7 @@ export default function SuperAdminLayout({
     children: React.ReactNode
 }) {
     const router = useRouter()
-    const { user } = useAuth()
+    const [user, setUser] = useState<User | null>(mockUsers[0])
     const [sidebarOpen, setSidebarOpen] = useState(false)
 
     // Check authentication

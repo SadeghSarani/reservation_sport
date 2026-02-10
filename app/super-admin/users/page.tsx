@@ -6,23 +6,17 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import {
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
-} from '@/components/ui/table'
+} from '@/components/table'
 import { mockUsers, mockVenues, mockReservations, formatPersianDate } from '@/lib/mock-data'
 import { roleLabels, type UserRole } from '@/lib/types'
 import { Search, Plus, Edit2, Trash2, Eye, Shield } from 'lucide-react'
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@radix-ui/react-select";
 
 const roleColors: Record<UserRole, string> = {
     user: 'bg-blue-500/10 text-blue-600',

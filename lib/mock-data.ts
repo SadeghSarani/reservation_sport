@@ -1,4 +1,4 @@
-import type { User, Venue, Reservation, Payment, SportType } from './type'
+import type { User, Venue, Reservation, Payment, SportType } from './types'
 
 export const mockUsers: User[] = [
     {

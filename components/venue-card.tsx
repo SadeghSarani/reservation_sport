@@ -56,12 +56,12 @@ export function VenueCard({ venue }: VenueCardProps) {
 
                 {/* Amenities */}
                 <div className="flex flex-wrap gap-1">
-                    {venue.amenities.slice(0, 3).map((amenity) => (
+                    {(venue.amenities || []).slice(0, 3).map((amenity) => (
                         <Badge key={amenity} variant="outline" className="text-xs">
                             {amenity}
                         </Badge>
                     ))}
-                    {venue.amenities.length > 3 && (
+                    {venue.amenities && venue.amenities.length > 3 && (
                         <Badge variant="outline" className="text-xs">
                             +{venue.amenities.length - 3}
                         </Badge>
@@ -73,7 +73,7 @@ export function VenueCard({ venue }: VenueCardProps) {
                     <div>
                         <div className="text-xs text-muted-foreground">شروع از</div>
                         <div className="text-lg font-bold text-primary">
-                            {formatPrice(venue.hourlyPrice)}
+                            {formatPrice(venue.price)}
                             <span className="text-xs font-normal text-muted-foreground mr-1">/ ساعت</span>
                         </div>
                     </div>

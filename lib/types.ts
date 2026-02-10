@@ -1,4 +1,4 @@
-export type UserRole = 'user' | 'admin' | 'superadmin'
+export type UserRole = 'user' | 'venue_admin' | 'superadmin'
 
 export type SportType = 'futsal' | 'volleyball' | 'basketball' | 'badminton' | 'gym'
 
@@ -15,8 +15,6 @@ export interface User {
     phone: string
     role: UserRole
     createdAt: string
-    avatar?: string
-    managedVenueId?: string // For admin role - which venue they manage
 }
 
 export interface Venue {

@@ -6,23 +6,17 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import {
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
-} from '@/components/ui/table'
+} from '@/components/table'
 import { mockVenues, mockUsers, mockReservations, formatPrice } from '@/lib/mock-data'
 import { sportTypeLabels, type SportType } from '@/lib/types'
 import { Search, Plus, Edit2, Trash2, Eye, ToggleLeft, ToggleRight } from 'lucide-react'
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@radix-ui/react-select";
 
 export default function SuperAdminVenuesPage() {
     const [searchQuery, setSearchQuery] = useState('')

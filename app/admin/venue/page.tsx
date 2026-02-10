@@ -5,13 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
 import { mockVenues, formatPrice } from '@/lib/mock-data'
 import { sportTypeLabels, persianDays } from '@/lib/types'
 import { useAuth } from '@/lib/auth-context'
 import { Save, MapPin, Clock, Users, Check } from 'lucide-react'
+import {Label} from "@radix-ui/react-label";
+import {Switch} from "@radix-ui/react-switch";
+import {Textarea} from "@/components/ui/textarea";
 
 export default function AdminVenuePage() {
     const { user } = useAuth()

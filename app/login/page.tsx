@@ -13,6 +13,7 @@ import { Footer } from '@/components/footer'
 import {Input} from "@/components/ui/input";
 import {Loader2} from "lucide-react";
 import {Label} from "@radix-ui/react-label";
+import {authApi} from "@/app/api/services/auth.api";
 
 export default function LoginPage() {
     const router = useRouter()
@@ -22,22 +23,31 @@ export default function LoginPage() {
     const [error, setError] = useState('')
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setError('')
+        e.preventDefault(); // 🔹 MUST prevent default
+        setError('');
 
         if (!email || !password) {
-            setError('لطفا تمام فیلدها را پر کنید')
-            return
+            setError('لطفا تمام فیلدها را پر کنید');
+            return;
         }
 
-        const success = await login(email, password)
-        if (success) {
-            router.push('/')
-        } else {
-            setError('ایمیل یا رمز عبور اشتباه است')
-        }
-    }
+        try {
+            const { success, error: loginError } = await authApi.login(email, password);
 
+            if (success) {
+                router.push('/');
+            } else {
+                setError(loginError || 'ایمیل یا رمز عبور اشتباه است');
+            }
+        } catch (err: any) {
+
+            if (err.response?.status === 401) {
+                setError('ایمیل یا رمز عبور اشتباه است');
+            } else {
+                setError('خطا در ورود، دوباره تلاش کنید');
+            }
+        }
+    };
     return (
         <div className="min-h-screen flex flex-col bg-background">
             <Header />
@@ -99,17 +109,6 @@ export default function LoginPage() {
                                     'ورود'
                                 )}
                             </Button>
-
-                            {/* Demo accounts */}
-                            <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                                <p className="text-sm font-medium text-muted-foreground">حساب‌های آزمایشی:</p>
-                                <div className="text-xs text-muted-foreground space-y-1">
-                                    <p>مدیر کل: ali@example.com</p>
-                                    <p>مدیر سالن: mohammad@example.com</p>
-                                    <p>کاربر: reza@example.com</p>
-                                    <p className="text-primary">(هر رمز عبوری قبول می‌شود)</p>
-                                </div>
-                            </div>
                         </form>
 
                         <div className="mt-6 text-center text-sm text-muted-foreground">

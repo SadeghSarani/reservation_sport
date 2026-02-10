@@ -3,8 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { useAuth } from '@/lib/auth-context'
-import { roleLabels } from '@/lib/types'
 import {
     LayoutDashboard,
     Calendar,
@@ -16,7 +14,12 @@ import {
     Home,
     ChevronRight,
 } from 'lucide-react'
-import { Button } from './ui/button'
+import {roleLabels, User} from "@/lib/types";
+import {Button} from "@/components/ui/button";
+import {useState} from "react";
+import {mockUsers} from "@/lib/mock-data";
+import {useAuth} from "@/lib/auth-context";
+
 
 interface AdminSidebarProps {
     type: 'admin' | 'superadmin'
@@ -24,7 +27,8 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ type }: AdminSidebarProps) {
     const pathname = usePathname()
-    const { user, logout } = useAuth()
+    const [user, setUser] = useState<User | null>(mockUsers[0])
+    const { logout } = useAuth()
 
     const adminLinks = [
         { href: '/admin', label: 'داشبورد', icon: LayoutDashboard },
