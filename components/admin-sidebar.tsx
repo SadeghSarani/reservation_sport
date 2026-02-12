@@ -49,7 +49,7 @@ export function AdminSidebar({ type }: AdminSidebarProps) {
     const links = type === 'admin' ? adminLinks : superadminLinks
 
     return (
-        <aside className="w-64 bg-sidebar text-sidebar-foreground min-h-screen flex flex-col">
+        <aside className="w-64 bg-sidebar text-sidebar-foreground min-h-screen flex flex-col h-full">
             {/* Logo */}
             <div className="p-4 border-b border-sidebar-border">
                 <Link href="/" className="flex items-center gap-2">
