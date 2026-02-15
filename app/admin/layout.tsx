@@ -8,28 +8,21 @@ import { AdminSidebar } from '@/components/admin-sidebar'
 import { Menu } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import {User} from "@/lib/types";
-import {mockUsers} from "@/lib/mock-data";
 
 export default function AdminLayout({
                                         children,
-                                    }: {
+}: {
     children: React.ReactNode
 }) {
     const router = useRouter()
-    const [user, setUser] = useState<User | null>(mockUsers[0])
+    const { user, logout } = useAuth()
+
     const [sidebarOpen, setSidebarOpen] = useState(false)
-
-    // Check authentication
-    // if (!user) {
-    //     router.push('/login')
-    //     return null
-    // }
-
-    // Check role
-    if (user.role !== 'admin' && user.role !== 'superadmin') {
-        router.push('/')
-        return null
+    const getDashboardLink = () => {
+        if (!user) return '/login'
+        if (user.role === 'superadmin') return '/superadmin'
+        if (user.role === 'venue_admin') return '/admin'
+        return '/dashboard'
     }
 
     return (

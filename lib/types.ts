@@ -119,7 +119,7 @@ export const paymentStatusLabels: Record<PaymentStatus, string> = {
 
 export const roleLabels: Record<UserRole, string> = {
     user: 'کاربر',
-    admin: 'مدیر سالن',
+    venue_admin: 'مدیر سالن',
     superadmin: 'مدیر کل',
 }
 

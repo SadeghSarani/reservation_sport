@@ -1,18 +1,19 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 
-import { mockReservations, mockVenues, mockUsers, formatPrice, formatPersianDate } from '@/lib/mock-data'
-import { reservationStatusLabels, paymentStatusLabels, type ReservationStatus } from '@/lib/types'
 import { useAuth } from '@/lib/auth-context'
 import { Search, CheckCircle, XCircle, Eye } from 'lucide-react'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@radix-ui/react-select";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@radix-ui/react-select'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/table'
+import {useToast} from "@/components/ui/use-toast";
+import {reservationApi} from "@/app/api/services/reservation.api";
 
+// Status colors
 const statusColors: Record<string, string> = {
     pending: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
     confirmed: 'bg-green-500/10 text-green-600 border-green-500/20',
@@ -27,22 +28,57 @@ const paymentColors: Record<string, string> = {
     refunded: 'bg-blue-500/10 text-blue-600',
 }
 
+// Labels (replace with your actual labels if needed)
+const reservationStatusLabels: Record<string, string> = {
+    pending: 'در انتظار',
+    confirmed: 'تایید شده',
+    cancelled: 'لغو شده',
+    completed: 'تکمیل شده',
+}
+
+const paymentStatusLabels: Record<string, string> = {
+    pending: 'در انتظار پرداخت',
+    paid: 'پرداخت شده',
+    failed: 'ناموفق',
+    refunded: 'مرجوع شده',
+}
+
 export default function AdminReservationsPage() {
     const { user } = useAuth()
     const [searchQuery, setSearchQuery] = useState('')
-    const [statusFilter, setStatusFilter] = useState<ReservationStatus | 'all'>('all')
+    const [statusFilter, setStatusFilter] = useState<'all' | string>('all')
+    const [reservations, setReservations] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const { toast, ToastViewport } = useToast()
 
-    // Get venue managed by this admin
-    const venue = useMemo(() => {
-        if (!user?.managedVenueId) {
-            return mockVenues[0]
+
+    // Fetch reservations from API
+    useEffect(() => {
+        const fetchReservations = async () => {
+
+            setLoading(true)
+            try {
+                const res = await reservationApi.getReservation()
+                const data = res.data
+                setReservations(data.data || [])
+            } catch (e) {
+                console.error(e)
+                toast({
+                    title: 'خطا',
+                    description: 'مشکل در دریافت رزروها ❌',
+                    variant: 'destructive',
+                })
+            } finally {
+                setLoading(false)
+            }
         }
-        return mockVenues.find((v) => v.id === user.managedVenueId) || mockVenues[0]
+
+        fetchReservations()
     }, [user])
 
-    // Get reservations for this venue
-    const reservations = useMemo(() => {
-        let result = mockReservations.filter((r) => r.venueId === venue?.id)
+    // Filtered reservations
+    const filteredReservations = useMemo(() => {
+        let result = [...reservations]
 
         if (statusFilter !== 'all') {
             result = result.filter((r) => r.status === statusFilter)
@@ -51,24 +87,26 @@ export default function AdminReservationsPage() {
         if (searchQuery) {
             const query = searchQuery.toLowerCase()
             result = result.filter((r) => {
-                const reservationUser = mockUsers.find((u) => u.id === r.userId)
-                return (
-                    reservationUser?.name.toLowerCase().includes(query) ||
-                    reservationUser?.phone.includes(query) ||
-                    r.id.includes(query)
-                )
+                const name = r.user?.name?.toLowerCase() || ''
+                const phone = r.user?.phone || ''
+                return name.includes(query) || phone.includes(query) || r.id.toString().includes(query)
             })
         }
 
-        return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    }, [venue, statusFilter, searchQuery])
+        return result.sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+    }, [reservations, statusFilter, searchQuery])
 
     return (
         <div className="space-y-6">
+            {/* Toast */}
+            <ToastViewport />
+
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-bold text-foreground">مدیریت رزروها</h1>
-                <p className="text-muted-foreground">{venue?.name}</p>
+                <p className="text-muted-foreground">سالن شما</p>
             </div>
 
             {/* Filters */}
@@ -84,13 +122,13 @@ export default function AdminReservationsPage() {
                                 className="pr-10"
                             />
                         </div>
-                        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as ReservationStatus | 'all')}>
+                        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v)}>
                             <SelectTrigger className="w-full sm:w-48">
                                 <SelectValue placeholder="وضعیت" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">همه وضعیت‌ها</SelectItem>
-                                {(Object.keys(reservationStatusLabels) as ReservationStatus[]).map((status) => (
+                                {Object.keys(reservationStatusLabels).map((status) => (
                                     <SelectItem key={status} value={status}>
                                         {reservationStatusLabels[status]}
                                     </SelectItem>
@@ -120,79 +158,77 @@ export default function AdminReservationsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {reservations.length === 0 ? (
+                                {loading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                                            در حال بارگذاری...
+                                        </TableCell>
+                                    </TableRow>
+                                ) : filteredReservations.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                                             رزروی یافت نشد
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    reservations.map((reservation) => {
-                                        const reservationUser = mockUsers.find((u) => u.id === reservation.userId)
-
-                                        return (
-                                            <TableRow key={reservation.id}>
-                                                <TableCell className="font-mono text-sm">#{reservation.id}</TableCell>
-                                                <TableCell>
-                                                    <div>
-                                                        <div className="font-medium">{reservationUser?.name}</div>
-                                                        <div className="text-xs text-muted-foreground" dir="ltr">
-                                                            {reservationUser?.phone}
-                                                        </div>
+                                    filteredReservations.map((r) => (
+                                        <TableRow key={r.id}>
+                                            <TableCell className="font-mono text-sm">#{r.id}</TableCell>
+                                            <TableCell>
+                                                <div>
+                                                    <div className="font-medium">{r.user?.name}</div>
+                                                    <div className="text-xs text-muted-foreground" dir="ltr">
+                                                        {r.user?.phone}
                                                     </div>
-                                                </TableCell>
-                                                <TableCell>{formatPersianDate(reservation.date)}</TableCell>
-                                                <TableCell>
-                                                    {reservation.type === 'hourly' && reservation.startTime
-                                                        ? `${reservation.startTime} - ${reservation.endTime}`
-                                                        : 'ماهیانه'}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {reservation.type === 'hourly' ? 'ساعتی' : 'ماهیانه'}
-                                                </TableCell>
-                                                <TableCell className="font-medium">
-                                                    {formatPrice(reservation.totalPrice)}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge variant="outline" className={statusColors[reservation.status]}>
-                                                        {reservationStatusLabels[reservation.status]}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge variant="secondary" className={paymentColors[reservation.paymentStatus]}>
-                                                        {paymentStatusLabels[reservation.paymentStatus]}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-1">
-                                                        <Button size="icon" variant="ghost" title="مشاهده">
-                                                            <Eye className="w-4 h-4" />
-                                                        </Button>
-                                                        {reservation.status === 'pending' && (
-                                                            <>
-                                                                <Button
-                                                                    size="icon"
-                                                                    variant="ghost"
-                                                                    className="text-green-600 hover:text-green-700 hover:bg-green-500/10"
-                                                                    title="تایید"
-                                                                >
-                                                                    <CheckCircle className="w-4 h-4" />
-                                                                </Button>
-                                                                <Button
-                                                                    size="icon"
-                                                                    variant="ghost"
-                                                                    className="text-red-600 hover:text-red-700 hover:bg-red-500/10"
-                                                                    title="رد"
-                                                                >
-                                                                    <XCircle className="w-4 h-4" />
-                                                                </Button>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        )
-                                    })
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>{new Date(r.start_at).toLocaleDateString('fa-IR')}</TableCell>
+                                            <TableCell>
+                                                {r.start_at && r.end_at
+                                                    ? `${new Date(r.start_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })} - ${new Date(r.end_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}`
+                                                    : '-'}
+                                            </TableCell>
+                                            <TableCell>{r.type === 'hourly' ? 'ساعتی' : 'ماهیانه'}</TableCell>
+                                            <TableCell className="font-medium">{r.total_price.toLocaleString()} تومان</TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className={statusColors[r.status]}>
+                                                    {reservationStatusLabels[r.status]}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="secondary" className={paymentColors[r.payment_status]}>
+                                                    {paymentStatusLabels[r.payment_status]}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-1">
+                                                    <Button size="icon" variant="ghost" title="مشاهده">
+                                                        <Eye className="w-4 h-4" />
+                                                    </Button>
+                                                    {r.status === 'pending' && (
+                                                        <>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
+                                                                className="text-green-600 hover:text-green-700 hover:bg-green-500/10"
+                                                                title="تایید"
+                                                            >
+                                                                <CheckCircle className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
+                                                                className="text-red-600 hover:text-red-700 hover:bg-red-500/10"
+                                                                title="رد"
+                                                            >
+                                                                <XCircle className="w-4 h-4" />
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
                                 )}
                             </TableBody>
                         </Table>
@@ -202,7 +238,7 @@ export default function AdminReservationsPage() {
 
             {/* Summary */}
             <div className="text-sm text-muted-foreground">
-                نمایش {reservations.length} رزرو
+                نمایش {filteredReservations.length} رزرو
             </div>
         </div>
     )

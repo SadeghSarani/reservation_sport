@@ -9,14 +9,16 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@radix-ui/react-label'
 import { Switch } from '@radix-ui/react-switch'
-import { Save, MapPin, Clock, Users } from 'lucide-react'
+import { Save, Plus, Trash2, MapPin, Clock, Users } from 'lucide-react'
 import { venuesApi } from '@/app/api/services/venues.api'
+import {useToast} from "@/components/ui/use-toast";
 
-interface VenuePrice {
-    id: number
-    start_time: string
-    end_time: string
-    price: string
+/* ===================== Types ===================== */
+
+interface Additional {
+    option_name: string
+    option_price: number
+    is_active: boolean
 }
 
 interface Venue {
@@ -29,12 +31,11 @@ interface Venue {
     is_active: number
     description: string
     price: string
-    venue_price: VenuePrice[]
+    additionals: Additional[]
 }
 
 interface CalendarDay {
     id: number
-    day: string
     day_jalali: string
     holiday: number
     event: string | null
@@ -45,13 +46,18 @@ interface TimeSlot {
     start_time: string
     end_time: string
     price: string
+    reservation?: {
+        status: string
+    }
 }
 
-export default function AdminVenuePage() {
-    const params = useParams()
-    const venueId = params.id as string
+/* ===================== Page ===================== */
 
-    // Venue State
+export default function AdminVenuePage() {
+    const { id } = useParams()
+    const venueId = id as string
+    const { toast, ToastViewport } = useToast()
+
     const [venue, setVenue] = useState<Venue | null>(null)
     const [loadingVenue, setLoadingVenue] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
@@ -61,137 +67,210 @@ export default function AdminVenuePage() {
         description: '',
         address: '',
         capacity: 0,
-        price: 0,
+        price: '',
         isActive: true,
     })
 
-    // Calendar State
+    const [additionals, setAdditionals] = useState<Additional[]>([])
+
     const [calendar, setCalendar] = useState<CalendarDay[]>([])
-    const [loadingCalendar, setLoadingCalendar] = useState(true)
     const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null)
 
-    // Time Slots State
     const [times, setTimes] = useState<TimeSlot[]>([])
     const [loadingTimes, setLoadingTimes] = useState(false)
 
-    /** Fetch Venue */
+    /* ===================== Fetch Venue ===================== */
+
     useEffect(() => {
         const fetchVenue = async () => {
             try {
-                const response = await venuesApi.getAdminSingleVenue(venueId)
-                const venueData = response.data.data
-                setVenue(venueData)
+                const res = await venuesApi.getAdminSingleVenue(venueId)
+                const data = res.data.data
+
+                setVenue(data)
+                setAdditionals(data.additionals || [])
+
                 setFormData({
-                    name: venueData.name,
-                    description: venueData.description,
-                    address: venueData.address,
-                    capacity: venueData.capacity,
-                    price: Number(venueData.price),
-                    isActive: venueData.is_active === 1,
+                    name: data.name,
+                    description: data.description,
+                    address: data.address,
+                    capacity: data.capacity,
+                    price: Number(data.price),
+                    isActive: data.is_active === 1,
                 })
-            } catch (error) {
-                console.error('Failed to fetch venue:', error)
+            } catch (e) {
+                console.error(e)
             } finally {
                 setLoadingVenue(false)
             }
         }
+
         fetchVenue()
     }, [venueId])
 
-    /** Fetch Calendar */
+    /* ===================== Fetch Calendar ===================== */
+
     useEffect(() => {
         if (!venue) return
-        const fetchCalendar = async () => {
-            try {
-                const response = await venuesApi.getCalendars(venue.id)
-                setCalendar(response.data.data)
-            } catch (error) {
-                console.error('Failed to fetch calendar:', error)
-            } finally {
-                setLoadingCalendar(false)
-            }
-        }
-        fetchCalendar()
+
+        venuesApi.getCalendars(venue.id).then(res => {
+            setCalendar(res.data.data)
+        })
     }, [venue])
 
-    /** Fetch Time Slots for selected day */
     const fetchTimeForDay = async (day: CalendarDay) => {
         setSelectedDay(day)
         setLoadingTimes(true)
+
         try {
-            const response = await venuesApi.getTimeCalendar(day.id, venueId)
-            setTimes(response.data.data)
-        } catch (error) {
-            console.error('Failed to fetch times:', error)
+            const res = await venuesApi.getTimeCalendar(day.id, venueId)
+            setTimes(res.data.data)
+        } catch {
             setTimes([])
         } finally {
             setLoadingTimes(false)
         }
     }
 
-    /** Save Venue */
+    /* ===================== Save ===================== */
+
     const handleSave = async () => {
         if (!venue) return
+        setIsSaving(true)
+
         try {
-            setIsSaving(true)
             await venuesApi.updateVenue(venue.id, {
                 ...formData,
                 is_active: formData.isActive ? 1 : 0,
+                additionals: additionals.map(a => ({
+                    option_name: a.option_name,
+                    option_price: a.option_price,
+                    is_active: a.is_active,
+                })),
             })
-        } catch (error) {
-            console.error('Save failed:', error)
+            toast({ title: 'عملیات موفق', description: 'سالن بروزرسانی شد ✅', variant: 'success' })}
+        catch (e) {
+            console.error(e)
+            toast({ title: 'خطا', description: 'خطا در بروزرسانی سالن ❌', variant: 'destructive' })
         } finally {
             setIsSaving(false)
         }
     }
 
-    if (loadingVenue) return <div className="text-center py-16 text-muted-foreground">Loading venue...</div>
-    if (!venue) return <div className="text-center py-16 text-muted-foreground">سالنی یافت نشد</div>
+    /* ===================== Additionals ===================== */
+
+    const addAdditional = () => {
+        setAdditionals(prev => [
+            ...prev,
+            { option_name: '', option_price: 0, is_active: false },
+        ])
+    }
+
+    const removeAdditional = (index: number) => {
+        setAdditionals(prev => prev.filter((_, i) => i !== index))
+    }
+
+    /* ===================== UI ===================== */
+
+    if (loadingVenue)
+        return <div className="text-center py-16 text-muted-foreground">Loading venue...</div>
+
+    if (!venue)
+        return <div className="text-center py-16">Venue not found</div>
 
     return (
         <div className="space-y-6">
 
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold">مدیریت سالن</h1>
                     <p className="text-muted-foreground">ویرایش اطلاعات سالن</p>
                 </div>
-                <Button onClick={handleSave} disabled={isSaving} className="gap-2">
-                    <Save className="w-4 h-4" />
-                    {isSaving ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
+                <Button onClick={handleSave} disabled={isSaving}>
+                    <Save className="w-4 h-4 mr-2" />
+                    ذخیره
                 </Button>
             </div>
+            <ToastViewport />
 
-            {/* Venue Info Card */}
+            {/* Venue Info */}
             <Card>
                 <CardHeader>
                     <CardTitle>{venue.name}</CardTitle>
-                    <CardDescription className="flex items-center gap-2">
-                        <Badge variant="secondary">
-                            {venue.type === 'futsal' ? 'فوتسال' :
-                                venue.type === 'volleyball' ? 'والیبال' :
-                                    venue.type === 'basketball' ? 'بسکتبال' : 'نامشخص'}
-                        </Badge>
+                    <CardDescription>
+                        <Badge>{venue.type}</Badge>
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-wrap gap-6 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2"><MapPin className="w-4 h-4" />{venue.address}</div>
-                    <div className="flex items-center gap-2"><Users className="w-4 h-4" />ظرفیت: {venue.capacity} نفر</div>
-                    <div className="flex items-center gap-2"><Clock className="w-4 h-4" />نوع پرداخت: {venue.billing_type === 'hourly' ? 'ساعتی' : 'ماهیانه'}</div>
+                <CardContent className="flex gap-6 text-sm text-muted-foreground">
+                    <div className="flex gap-2"><MapPin className="w-4" />{venue.address}</div>
+                    <div className="flex gap-2"><Users className="w-4" />{venue.capacity}</div>
+                    <div className="flex gap-2"><Clock className="w-4" />{venue.billing_type}</div>
                 </CardContent>
             </Card>
 
             {/* Edit Form */}
             <Card>
-                <CardHeader><CardTitle>ویرایش اطلاعات</CardTitle></CardHeader>
+                <CardHeader><CardTitle>اطلاعات سالن</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                    <div><Label>نام سالن</Label><Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} /></div>
-                    <div><Label>توضیحات</Label><Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} /></div>
-                    <div><Label>آدرس</Label><Input value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} /></div>
-                    <div><Label>ظرفیت</Label><Input type="number" value={formData.capacity} onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 0 })} /></div>
-                    <div><Label>قیمت پایه</Label><Input type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) || 0 })} /></div>
-                    <div className="flex items-center gap-3"><Label>فعال</Label><Switch checked={formData.isActive} onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })} /></div>
+                    <Input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                    <Textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                    <Input value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} />
+                    <Input type="number" value={formData.capacity} onChange={e => setFormData({ ...formData, capacity: +e.target.value })} />
+                    <Input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: +e.target.value })} />
+                    <div className="flex gap-3 items-center">
+                        <Label>فعال</Label>
+                        <Switch checked={formData.isActive} onCheckedChange={c => setFormData({ ...formData, isActive: c })} />
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Additionals */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>افزودنی‌ها</CardTitle>
+                    <CardDescription>قابل ویرایش و فعال‌سازی</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {additionals.map((a, i) => (
+                        <div key={i} className={`flex gap-3 items-center p-3 border rounded ${a.is_active ? 'bg-green-50' : ''}`}>
+                            <Input
+                                placeholder="نام"
+                                value={a.option_name}
+                                onChange={e => {
+                                    const updated = [...additionals]
+                                    updated[i].option_name = e.target.value
+                                    setAdditionals(updated)
+                                }}
+                            />
+                            <Input
+                                type="number"
+                                placeholder="قیمت"
+                                value={a.option_price}
+                                onChange={e => {
+                                    const updated = [...additionals]
+                                    updated[i].option_price = +e.target.value
+                                    setAdditionals(updated)
+                                }}
+                            />
+                            <Switch
+                                checked={a.is_active}
+                                onCheckedChange={c => {
+                                    const updated = [...additionals]
+                                    updated[i].is_active = c
+                                    setAdditionals(updated)
+                                }}
+                            />
+                            <Button variant="ghost" onClick={() => removeAdditional(i)}>
+                                <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                        </div>
+                    ))}
+
+                    <Button variant="outline" onClick={addAdditional}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        افزودن گزینه
+                    </Button>
                 </CardContent>
             </Card>
 
@@ -199,23 +278,20 @@ export default function AdminVenuePage() {
             <Card>
                 <CardHeader><CardTitle>تقویم</CardTitle></CardHeader>
                 <CardContent>
-                    {loadingCalendar ? (
-                        <p>Loading calendar...</p>
-                    ) : (
-                        <div className="flex flex-wrap gap-2">
-                            {calendar.map(day => (
-                                <button
-                                    key={day.id}
-                                    className={`px-3 py-1 border rounded ${
-                                        day.holiday ? 'bg-red-100' : selectedDay?.id === day.id ? 'bg-blue-200' : 'bg-green-100'
-                                    }`}
-                                    onClick={() => fetchTimeForDay(day)}
-                                >
-                                    {day.day_jalali} {day.event ? `(${day.event})` : ''}
-                                </button>
-                            ))}
-                        </div>
-                    )}
+                    <div className="flex flex-wrap gap-2">
+                        {calendar.map(day => (
+                            <button
+                                key={day.id}
+                                onClick={() => fetchTimeForDay(day)}
+                                className={`px-3 py-1 border rounded
+                  ${day.holiday ? 'bg-red-100' :
+                                    selectedDay?.id === day.id ? 'bg-blue-200' :
+                                        'bg-green-100'}`}
+                            >
+                                {day.day_jalali} {day.event ? `(${day.event})` : ''}
+                            </button>
+                        ))}
+                    </div>
                 </CardContent>
             </Card>
 
@@ -223,7 +299,7 @@ export default function AdminVenuePage() {
             {selectedDay && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>زمان‌های موجود برای {selectedDay.day_jalali}</CardTitle>
+                        <CardTitle>زمان‌های {selectedDay.day_jalali}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-wrap gap-2">
                         {loadingTimes ? (
@@ -231,15 +307,27 @@ export default function AdminVenuePage() {
                         ) : times.length === 0 ? (
                             <p className="text-muted-foreground">زمانی موجود نیست</p>
                         ) : (
-                            times.map(time => (
-                                <button
-                                    key={time.id}
-                                    className="px-4 py-2 border rounded-lg bg-white hover:bg-blue-100 transition-colors text-sm flex-1 min-w-[120px] text-center"
-                                >
-                                    <span className="block font-medium">{time.start_time} - {time.end_time}</span>
-                                    <span className="block text-gray-500">{Number(time.price).toLocaleString()} تومان</span>
-                                </button>
-                            ))
+                            times.map(time => {
+                                const confirmed = time.reservation?.status === 'confirmed'
+                                return (
+                                    <button
+                                        key={time.id}
+                                        disabled={confirmed}
+                                        className={`px-4 py-2 border rounded-lg text-sm min-w-[120px]
+                      ${confirmed
+                                            ? 'bg-green-500 text-white cursor-not-allowed'
+                                            : 'bg-white hover:bg-blue-100'}`}
+                                    >
+                                        <span className="block">{time.start_time} - {time.end_time}</span>
+                                        <span className="block text-xs">
+                      {Number(time.price).toLocaleString()} تومان
+                    </span>
+                                        {confirmed && (
+                                            <span className="block text-xs mt-1">رزرو شده</span>
+                                        )}
+                                    </button>
+                                )
+                            })
                         )}
                     </CardContent>
                 </Card>

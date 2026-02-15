@@ -52,7 +52,6 @@ export default function HomePage() {
         fetchCounts()
     }, [])
 
-    console.log(featuredVenues)
     return (
         <div className="min-h-screen flex flex-col bg-background">
             <Header />

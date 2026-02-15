@@ -30,6 +30,10 @@ class VenuesApi extends BaseApi {
     async getCalendars(venueId : number) {
         return await this.get(`/venues/calendars/${venueId}`)
     }
+
+    async updateVenue (venueId: number, data: object) {
+        return await this.post(`venues/admin/manage/update/${venueId}`, data)
+    }
 }
 
 export const venuesApi = new VenuesApi();

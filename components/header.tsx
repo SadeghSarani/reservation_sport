@@ -18,11 +18,11 @@ import { ThemeToggle } from '@/components/theme-toggle'
 export function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const { user, logout } = useAuth()
-    console.log(user)
+
     const getDashboardLink = () => {
         if (!user) return '/login'
         if (user.role === 'superadmin') return '/superadmin'
-        if (user.role === 'admin') return '/admin'
+        if (user.role === 'venue_admin') return '/admin'
         return '/dashboard'
     }
 

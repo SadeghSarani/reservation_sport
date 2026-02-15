@@ -27,8 +27,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ type }: AdminSidebarProps) {
     const pathname = usePathname()
-    const [user, setUser] = useState<User | null>(mockUsers[0])
-    const { logout } = useAuth()
+    const { user, logout } = useAuth()
 
     const adminLinks = [
         { href: '/admin', label: 'داشبورد', icon: LayoutDashboard },
