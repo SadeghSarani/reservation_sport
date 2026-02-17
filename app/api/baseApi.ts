@@ -5,8 +5,8 @@ export default class BaseApi {
         return httpClient.get<T>(url, { params });
     }
 
-    protected post<T>(url: string, data = {}) {
-        return httpClient.post<T>(url, data);
+    protected post<T>(url: string, data = {}, config = {}) {
+        return httpClient.post<T>(url, data, config);
     }
 
     protected put<T>(url: string, data = {}) {

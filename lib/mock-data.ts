@@ -281,6 +281,17 @@ export function formatPersianDate(dateStr: string): string {
     }).format(date)
 }
 
+export function formatPersianDateWithHour(dateStr: string): string {
+    const date = new Date(dateStr)
+    return new Intl.DateTimeFormat('fa-IR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: "2-digit",
+        minute: "2-digit"
+    }).format(date)
+}
+
 // Generate time slots for a venue
 export function generateTimeSlots(venue: Venue, date: string): { time: string; available: boolean }[] {
     const slots: { time: string; available: boolean }[] = []

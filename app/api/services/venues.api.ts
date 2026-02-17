@@ -34,6 +34,17 @@ class VenuesApi extends BaseApi {
     async updateVenue (venueId: number, data: object) {
         return await this.post(`venues/admin/manage/update/${venueId}`, data)
     }
+
+    async updateVenuePhoto(venueId: number, data: FormData) {
+        return this.post(
+            `/venues/upload/${venueId}`,
+            data,
+            {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            }
+        )
+    }
+
 }
 
 export const venuesApi = new VenuesApi();
