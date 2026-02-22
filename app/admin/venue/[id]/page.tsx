@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { venuesApi } from '@/app/api/services/venues.api'
 import { useToast } from "@/components/ui/use-toast"
+import {sportTypeLabels} from "@/lib/types";
 
 /* ===================== Types ===================== */
 
@@ -246,6 +247,10 @@ export default function AdminVenuePage() {
         }
     }
 
+    function removeTime(timeId: number){
+        if (!timeId) return;
+
+    }
 
     /* ===================== Additionals ===================== */
 
@@ -365,7 +370,7 @@ export default function AdminVenuePage() {
                                 <p className="text-indigo-200 text-xs font-medium uppercase tracking-widest mb-1">سالن</p>
                                 <h1 className="text-2xl font-bold">{venue.name}</h1>
                             </div>
-                            <Badge className="bg-white/20 text-white border-white/30 text-xs">{venue.type}</Badge>
+                            <Badge className="bg-white/20 text-white border-white/30 text-xs">{sportTypeLabels[venue.type]}</Badge>
                         </div>
                         <div className="mt-5 flex flex-wrap gap-5 text-sm text-indigo-100">
                             <div className="flex items-center gap-2">
@@ -378,7 +383,12 @@ export default function AdminVenuePage() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <Clock className="w-4 h-4 text-indigo-300" />
-                                {venue.billing_type}
+                                {venue.billing_type && venue.billing_type === 'hourly' && (
+                                    <span>ساعتی</span>
+                                )}
+                                {venue.billing_type && venue.billing_type === 'monthly' && (
+                                    <span>ماهانه</span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -570,7 +580,6 @@ export default function AdminVenuePage() {
 
                                 <div className="relative flex-shrink-0 w-36">
                                     <Input
-                                        type="number"
                                         placeholder="قیمت"
                                         value={a.option_price}
                                         onChange={e => {
@@ -682,6 +691,16 @@ export default function AdminVenuePage() {
                                                 <span className="mt-2 inline-block text-[10px] font-bold bg-emerald-500 text-white px-2 py-0.5 rounded-full">
                                                     رزرو شده
                                                 </span>
+                                            )}
+
+                                            {!confirmed && (
+                                                <Button className="
+                                                order-indigo-500 bg-indigo-600 text-white shadow-md shadow-indigo-200
+                                                px-3 py-2 rounded-lg border text-xs font-medium cursor-pointer"
+                                                onClick={removeTime(time.id)}
+                                                >
+                                                    حذف تایم
+                                                </Button>
                                             )}
                                         </div>
                                     )

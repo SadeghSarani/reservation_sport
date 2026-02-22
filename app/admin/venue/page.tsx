@@ -77,7 +77,7 @@ export default function AdminVenuesPage() {
                         {loading ? '...' : `${venues.length} سالن ثبت‌شده`}
                     </p>
                 </div>
-                <Button size="sm" className="gap-2 h-9">
+                <Button size="sm" className="gap-2 h-9" onClick={ () => router.push('/admin/venue/create')}>
                     <Plus className="w-4 h-4" />
                     افزودن سالن
                 </Button>

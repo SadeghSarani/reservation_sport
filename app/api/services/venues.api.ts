@@ -5,7 +5,7 @@ class VenuesApi extends BaseApi {
         return await this.get("/venue/dashboard");
     }
 
-    async getVenues(query : any) {
+    async getVenues(query: any) {
         return await this.get('/venues', query)
     }
 
@@ -21,17 +21,21 @@ class VenuesApi extends BaseApi {
         return await this.get(`/venues/manage/admin/${id}`)
     }
 
-
-    async getTimeCalendar(calendarId : number, venueId : number) {
+    async getTimeCalendar(calendarId: number, venueId: number) {
         return await this.get(`/venues/time/${venueId}`, {
-            calendar_id : calendarId
+            calendar_id: calendarId
         })
     }
-    async getCalendars(venueId : number) {
+
+    async getCalendars(venueId: number) {
         return await this.get(`/venues/calendars/${venueId}`)
     }
 
-    async updateVenue (venueId: number, data: object) {
+    async createVenue(data: object) {
+        return await this.post('/admin/venues', data)
+    }
+
+    async updateVenue(venueId: number, data: object) {
         return await this.post(`venues/admin/manage/update/${venueId}`, data)
     }
 
@@ -44,7 +48,6 @@ class VenuesApi extends BaseApi {
             }
         )
     }
-
 }
 
 export const venuesApi = new VenuesApi();
