@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import {useState, useRef, useEffect} from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import {
     Save, Plus, Trash2, MapPin, Clock, Users,
     ImagePlus, X, GripVertical, Eye, Building2,
-    ChevronRight, ToggleLeft, AlarmClock
+    ChevronRight, ToggleLeft, AlarmClock, Calendar
 } from 'lucide-react'
 import { venuesApi } from '@/app/api/services/venues.api'
 import { useToast } from '@/components/ui/use-toast'
@@ -379,6 +379,8 @@ export default function CreateVenuePage() {
 
     /* Submit */
     const handleSubmit = async () => {
+
+        console.log(formData.name ,formData.address ,formData.type)
         if (!formData.name || !formData.address || !formData.type) {
             toast({
                 title: 'خطا',
@@ -387,6 +389,7 @@ export default function CreateVenuePage() {
             })
             return
         }
+
 
         // Clean schedules before sending
         const cleanedSchedules = schedules
@@ -424,7 +427,8 @@ export default function CreateVenuePage() {
             time_schedules:
                 formData.billing_type === 'hourly'
                     ? cleanedSchedules
-                    : []
+                    : [],
+            calendars_id: selectedDays
         }
 
         setIsSaving(true)
@@ -483,6 +487,38 @@ export default function CreateVenuePage() {
             ایجاد سالن
         </Button>
     )
+
+
+    const [days, setDays] = useState<CalendarDay[]>([])
+    const [selectedDays, setSelectedDays] = useState<number[]>([])
+    const [isLoadingDays, setIsLoadingDays] = useState(false)
+
+    const fetchDays = async () => {
+        try {
+            setIsLoadingDays(true)
+
+            const response = await venuesApi.getCalendarData()
+            setDays(response.data.data)
+
+        } catch (error) {
+            console.error('Days fetch error:', error)
+            setDays([])
+        } finally {
+            setIsLoadingDays(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchDays()
+    }, [])
+
+    const toggleDaySelection = (id: number) => {
+        setSelectedDays(prev =>
+            prev.includes(id)
+                ? prev.filter(dayId => dayId !== id)
+                : [...prev, id]
+        )
+    }
 
     return (
         <div dir="rtl" className="min-h-screen bg-slate-50 font-sans"
@@ -631,6 +667,66 @@ export default function CreateVenuePage() {
                         <TimeScheduleSection schedules={schedules} onChange={setSchedules} />
                     </Section>
                 )}
+
+                <Section
+                    icon={Calendar}
+                    title="انتخاب تاریخ‌ها"
+                    subtitle="می‌توانید چند تاریخ را انتخاب کنید"
+                >
+                    <div className="space-y-4">
+
+                        {/* Loading */}
+                        {isLoadingDays && (
+                            <p className="text-sm text-slate-400">
+                                در حال دریافت تاریخ‌ها...
+                            </p>
+                        )}
+
+                        {/* Days Grid */}
+                        {!isLoadingDays && (
+                            <>
+                                {days.length === 0 ? (
+                                    <p className="text-sm text-red-400">
+                                        تاریخی موجود نیست
+                                    </p>
+                                ) : (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+
+                                        {days.map(day => {
+                                            const isSelected = selectedDays.includes(day.id)
+                                            const isHoliday = day.holiday === 1
+
+                                            return (
+                                                <button
+                                                    key={day.id}
+                                                    type="button"
+                                                    onClick={() => toggleDaySelection(day.id)}
+                                                    className={`p-3 rounded-xl border text-sm font-medium transition-all text-center
+                    ${
+                                                        isSelected
+                                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                                            : isHoliday
+                                                                ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
+                                                                : 'bg-white border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'
+                                                    }
+                  `}
+                                                >
+                                                    <div>{day.day_jalali}</div>
+
+                                                    <div className="text-xs mt-1 opacity-80">
+                                                        {isHoliday ? 'تعطیل' : 'عادی'}
+                                                    </div>
+                                                </button>
+                                            )
+                                        })}
+
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                    </div>
+                </Section>
 
                 {/* Gallery */}
                 <Section icon={ImagePlus} title="گالری تصاویر" subtitle="تصاویر برای نمایش به کاربران">

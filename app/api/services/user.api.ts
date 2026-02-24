@@ -8,6 +8,10 @@ class UserApi extends BaseApi {
     async getAdminDashboardData() {
         return await this.get('/admin/dashboard')
     }
+
+    async getUserDashboardData() {
+        return await this.get('/user/dashboard')
+    }
 }
 
 export const userApi = new UserApi();

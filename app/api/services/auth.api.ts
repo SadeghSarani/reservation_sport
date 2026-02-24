@@ -35,12 +35,13 @@ class AuthApi extends BaseApi {
         }
     }
 
-    async register(name: string, email: string, password: string) {
+    async register(name: string, email: string, phone: string, password: string) {
         try {
             const { data } = await this.post<{ token: string; user: { name: string; role: string } }>("/register", {
                 name,
                 email,
                 password,
+                phone
             });
 
             setToken(data.token);

@@ -48,6 +48,10 @@ class VenuesApi extends BaseApi {
             }
         )
     }
+
+    async getCalendarData() {
+        return await this.get('calendar')
+    }
 }
 
 export const venuesApi = new VenuesApi();

@@ -10,7 +10,7 @@ interface AuthContextType {
     isLoading: boolean
     login: (email: string, password: string) => Promise<boolean>
     logout: () => void
-    register: (name: string, email: string, password: string) => Promise<boolean>
+    register: (name: string, email: string, phone: string, password: string) => Promise<boolean>
     switchRole: (role: UserRole) => void
 }
 
@@ -52,10 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null)
     }, [])
 
-    const register = useCallback(async (name: string, email: string, password: string) => {
+    const register = useCallback(async (name: string, email: string, phone: string,password: string) => {
         setIsLoading(true)
         try {
-            const res = await authApi.register(name, email, password)
+            const res = await authApi.register(name, email, phone , password)
             if (!res.success) return false
 
             setUser(res.user)
