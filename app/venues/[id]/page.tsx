@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import {useState, useEffect, useMemo} from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -9,7 +9,7 @@ import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { VenueImageSlider } from '@/components/venue-image-slider'
 
-import { sportTypeLabels } from '@/lib/types'
+import {SportType, sportTypeLabels, Venue} from '@/lib/types'
 import { useAuth } from '@/lib/auth-context'
 import { formatPrice } from '@/lib/mock-data'
 
@@ -124,31 +124,36 @@ export default function VenueDetailPage() {
     const [selectedSlot, setSelectedSlot] = useState<any>(null)
 
     /* ─── Fetch ─────────────────────────────────────────────────── */
+
+
+    const venueId = useMemo(() => {
+        if (!id) return null
+        return Array.isArray(id) ? Number(id[0]) : Number(id)
+    }, [id])
+
     useEffect(() => {
-        if (!id) return
+        if (!venueId || Number.isNaN(venueId)) return
+
         const fetchAll = async () => {
             setLoading(true)
             try {
-                const res = await venuesApi.getVenue(id)
+                const res = await venuesApi.getVenue(venueId) as { data: Venue }
                 setVenue(res.data)
 
-                // Also load calendar for this venue
-                const calRes = await venuesApi.getCalendars(res.data.id)
-                const calData: any[] = calRes.data.data || []
-                setCalendar(calData)
+                const calRes = await venuesApi.getCalendars(res.data.id).then((response: any) => {
+                    setCalendar(response.data.data || [])
+                })
 
-                // Auto-select first available day
-                if (calData.length > 0) {
-                    setSelectedCalendarId(calData[0].id)
-                }
+
             } catch {
                 setVenue(null)
             } finally {
                 setLoading(false)
             }
         }
+
         fetchAll()
-    }, [id])
+    }, [venueId])
 
     /* ─── Loading ───────────────────────────────────────────────── */
     if (loading) return <PageSkeleton />
@@ -190,7 +195,6 @@ export default function VenueDetailPage() {
     const handleReserve = () => {
         if (!user) { router.push('/login'); return }
         if (!selectedCalendarId || !selectedSlot) return
-        router.push(`/payment?venueId=${venue.id}&calendarId=${selectedCalendarId}&slot=${selectedSlot.id}`)
     }
 
     const gradient = sportAccent[venue.type] || 'from-primary to-primary/70'
@@ -233,7 +237,7 @@ export default function VenueDetailPage() {
                             {/* Sport badge */}
                             <div className="mb-3">
                                 <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full ${badgeCls} backdrop-blur-sm`}>
-                                    {sportTypeLabels[venue.type]}
+                                    {sportTypeLabels[venue.type as SportType]}
                                 </span>
                             </div>
 
@@ -267,7 +271,7 @@ export default function VenueDetailPage() {
                                 <div className="grid grid-cols-3 gap-4 mt-6 pt-5 border-t border-border">
                                     {[
                                         { label: 'ظرفیت', value: `${venue.capacity} نفر`, icon: Users },
-                                        { label: 'نوع', value: sportTypeLabels[venue.type], icon: Calendar },
+                                        { label: 'نوع', value: sportTypeLabels[venue.type as SportType], icon: Calendar },
                                         { label: 'قیمت پایه', value: formatPrice(venue.price), icon: Clock },
                                     ].map(item => (
                                         <div key={item.label} className="text-center">

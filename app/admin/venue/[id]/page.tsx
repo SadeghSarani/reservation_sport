@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { venuesApi } from '@/app/api/services/venues.api'
 import { useToast } from "@/components/ui/use-toast"
-import {sportTypeLabels} from "@/lib/types";
+import {SportType, sportTypeLabels} from "@/lib/types";
 
 /* ===================== Types ===================== */
 
@@ -128,7 +128,7 @@ export default function AdminVenuePage() {
         description: '',
         address: '',
         capacity: 0,
-        price: '',
+        price: 0,
         isActive: true,
     })
 
@@ -144,10 +144,30 @@ export default function AdminVenuePage() {
 
     /* ===================== Fetch Venue ===================== */
 
+    interface Venue {
+        id: number
+        name: string
+        description: string
+        address: string
+        capacity: number
+        price: number
+        is_active: number
+        additionals?: any[],
+        type: string,
+        billing_type: string
+    }
+
+    interface SingleVenueResponse {
+        data: Venue
+    }
+
     useEffect(() => {
         const fetchVenue = async () => {
             try {
-                const res = await venuesApi.getAdminSingleVenue(venueId)
+                const res = await venuesApi.getAdminSingleVenue(venueId) as {
+                    data: { data: Venue }
+                }
+
                 const data = res.data.data
                 setVenue(data)
                 setAdditionals(data.additionals || [])
@@ -170,7 +190,7 @@ export default function AdminVenuePage() {
 
     useEffect(() => {
         if (!venue) return
-        venuesApi.getCalendars(venue.id).then(res => {
+        venuesApi.getCalendars(venue.id).then((res: any) => {
             setCalendar(res.data.data)
         })
     }, [venue])
@@ -179,8 +199,10 @@ export default function AdminVenuePage() {
         setSelectedDay(day)
         setLoadingTimes(true)
         try {
-            const res = await venuesApi.getTimeCalendar(day.id, venueId)
-            setTimes(res.data.data)
+            const res =
+                await venuesApi.getTimeCalendar(day.id, venueId).then((res: any) => {
+                    setTimes(res.data.data)
+            })
         } catch {
             setTimes([])
         } finally {
@@ -245,11 +267,6 @@ export default function AdminVenuePage() {
         } finally {
             setIsSaving(false)
         }
-    }
-
-    function removeTime(timeId: number){
-        if (!timeId) return;
-
     }
 
     /* ===================== Additionals ===================== */
@@ -370,7 +387,7 @@ export default function AdminVenuePage() {
                                 <p className="text-indigo-200 text-xs font-medium uppercase tracking-widest mb-1">سالن</p>
                                 <h1 className="text-2xl font-bold">{venue.name}</h1>
                             </div>
-                            <Badge className="bg-white/20 text-white border-white/30 text-xs">{sportTypeLabels[venue.type]}</Badge>
+                            <Badge className="bg-white/20 text-white border-white/30 text-xs">{sportTypeLabels[venue.type as SportType]}</Badge>
                         </div>
                         <div className="mt-5 flex flex-wrap gap-5 text-sm text-indigo-100">
                             <div className="flex items-center gap-2">
@@ -697,7 +714,6 @@ export default function AdminVenuePage() {
                                                 <Button className="
                                                 order-indigo-500 bg-indigo-600 text-white shadow-md shadow-indigo-200
                                                 px-3 py-2 rounded-lg border text-xs font-medium cursor-pointer"
-                                                onClick={removeTime(time.id)}
                                                 >
                                                     حذف تایم
                                                 </Button>

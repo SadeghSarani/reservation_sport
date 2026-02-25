@@ -18,7 +18,7 @@ export interface User {
 }
 
 export interface Venue {
-    id: string
+    id: number
     name: string
     sportType: SportType
     description: string
@@ -34,7 +34,8 @@ export interface Venue {
     amenities: string[]
     isActive: boolean
     adminId?: string
-    createdAt: string
+    createdAt: string,
+    price: number
 }
 
 export interface TimeSlot {

@@ -26,7 +26,7 @@ export function VenueCard({ venue }: VenueCardProps) {
             <div className={`h-40 bg-gradient-to-br ${sportGradients[venue.sportType]} relative`}>
                 <div className="absolute inset-0 bg-black/20" />
                 <div className="absolute top-3 right-3">
-                    <Badge variant="secondary" className="bg-white/90 text-foreground">
+                    <Badge variant="info" className="bg-white/90 text-foreground">
                         {sportTypeLabels[venue.sportType]}
                     </Badge>
                 </div>
@@ -57,12 +57,12 @@ export function VenueCard({ venue }: VenueCardProps) {
                 {/* Amenities */}
                 <div className="flex flex-wrap gap-1">
                     {(venue.amenities || []).slice(0, 3).map((amenity) => (
-                        <Badge key={amenity} variant="outline" className="text-xs">
+                        <Badge key={amenity} variant="warning" className="text-xs">
                             {amenity}
                         </Badge>
                     ))}
                     {venue.amenities && venue.amenities.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="default" className="text-xs">
                             +{venue.amenities.length - 3}
                         </Badge>
                     )}

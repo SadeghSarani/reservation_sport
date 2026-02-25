@@ -48,7 +48,7 @@ export default function SuperAdminDashboard() {
         .slice(0, 5)
 
     const venueStats = mockVenues.slice(0, 5).map((venue) => {
-        const venueReservations = mockReservations.filter((r) => r.venueId === venue.id)
+        const venueReservations = mockReservations.filter((r) => Number(r.venueId) === venue.id)
         const revenue = venueReservations
             .filter((r) => r.paymentStatus === 'paid')
             .reduce((sum, r) => sum + r.totalPrice, 0)
@@ -181,7 +181,7 @@ export default function SuperAdminDashboard() {
                         <div className="space-y-4">
                             {recentReservations.map((reservation) => {
                                 const user = mockUsers.find((u) => u.id === reservation.userId)
-                                const venue = mockVenues.find((v) => v.id === reservation.venueId)
+                                const venue = mockVenues.find((v) => v.id === Number(reservation.venueId))
 
                                 return (
                                     <div
@@ -194,7 +194,7 @@ export default function SuperAdminDashboard() {
                                                 {venue?.name} - {formatPersianDate(reservation.date)}
                                             </p>
                                         </div>
-                                        <Badge variant="outline" className={
+                                        <Badge variant="success" className={
                                             reservation.status === 'confirmed' ? 'border-green-500/30 text-green-600' :
                                                 reservation.status === 'pending' ? 'border-yellow-500/30 text-yellow-600' :
                                                     'border-red-500/30 text-red-600'

@@ -118,16 +118,31 @@ export default function HomePage() {
     const [sportCounts, setSportCounts] = useState<Record<SportType, number>>({} as Record<SportType, number>)
     const featuredVenues = mockVenues.filter((v) => v.isActive).slice(0, 4)
 
+    interface SportDashboardItem {
+        type: SportType
+        total: number
+    }
+
+    interface VenuesDashboardResponse {
+        data: SportDashboardItem[]
+    }
+
     useEffect(() => {
         const fetchCounts = async () => {
             try {
-                const response = await venuesApi.getVenuesDashboard()
+                const response = await venuesApi.getVenuesDashboard() as {
+                    data: {
+                        data: SportDashboardItem[]
+                    }
+                }
                 const countsData = response.data.data
                 const counts: Record<SportType, number> = {} as Record<SportType, number>
+
                 ;(Object.keys(sportTypeLabels) as SportType[]).forEach((sport) => {
                     const found = countsData.find((item: any) => item.type === sport)
                     counts[sport] = found ? found.total : 0
                 })
+
                 setSportCounts(counts)
             } catch (err) {
                 console.error(err)

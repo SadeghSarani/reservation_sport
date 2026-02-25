@@ -7,19 +7,26 @@ import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {mockVenues, formatPrice, formatPersianDate, formatPersianDateWithHour} from '@/lib/mock-data'
-import { reservationStatusLabels, sportTypeLabels } from '@/lib/types'
+import {ReservationStatus, reservationStatusLabels, ReservationType, SportType, sportTypeLabels} from '@/lib/types'
 import { useAuth } from '@/lib/auth-context'
 import { Calendar, CreditCard, Clock, MapPin, ArrowLeft, User } from 'lucide-react'
 import { userApi } from "@/app/api/services/user.api"
 
 export default function UserDashboard() {
 
+    interface UserDashboardResponse {
+        all_reservationCount: number
+        reservation_price_paid: number
+        last_reservation: any[]   // replace with proper type if you have one
+        future_reservation: number
+    }
+
     const { user, isLoading } = useAuth()
 
     const [totalSpent, setTotalSpent] = useState<number>(0)
     const [userReservations, setUserReservations] = useState<number>(0)
     const [recentReservations, setRecentReservations] = useState<any[]>([])
-    const [upcomingReservations, setUpcomingReservations] = useState<any[]>([])
+    const [upcomingReservations, setUpcomingReservations] = useState<number>(0)
     const [dashboardLoading, setDashboardLoading] = useState<boolean>(true)
 
     useEffect(() => {
@@ -30,7 +37,9 @@ export default function UserDashboard() {
             try {
                 setDashboardLoading(true)
 
-                const response = await userApi.getUserDashboardData()
+                const response = await userApi.getUserDashboardData() as {
+                    data: UserDashboardResponse
+                }
 
                 setUserReservations(response?.data?.all_reservationCount ?? 0)
                 setTotalSpent(response?.data?.reservation_price_paid ?? 0)
@@ -183,7 +192,7 @@ export default function UserDashboard() {
                                                     >
                                                         <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                                                             <span className="font-bold text-primary">
-                                                                {sportTypeLabels[reservation.venue.type]?.charAt(0)}
+                                                                {sportTypeLabels[reservation.venue.type as SportType]?.charAt(0)}
                                                             </span>
                                                         </div>
 
@@ -212,7 +221,7 @@ export default function UserDashboard() {
                                                                 {formatPrice(reservation.total_price)}
                                                             </div>
                                                             <div className="text-xs text-muted-foreground">
-                                                                {reservationStatusLabels[reservation.status]}
+                                                                {reservationStatusLabels[reservation.status as ReservationStatus]}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -249,43 +258,13 @@ export default function UserDashboard() {
                                 </CardContent>
                             </Card>
 
-                            {!dashboardLoading && upcomingReservations.length > 0 && (
+                            {!dashboardLoading && upcomingReservations > 0 && (
                                 <Card className="border-primary/50 bg-primary/5">
                                     <CardHeader>
                                         <CardTitle className="text-primary">
                                             رزرو بعدی شما
                                         </CardTitle>
                                     </CardHeader>
-
-                                    <CardContent>
-                                        {(() => {
-                                            const next = upcomingReservations[0]
-                                            const venue = mockVenues.find(
-                                                (v) => v.id === next.venueId
-                                            )
-
-                                            if (!venue) return null
-
-                                            return (
-                                                <div>
-                                                    <h4 className="font-medium">
-                                                        {venue.name}
-                                                    </h4>
-
-                                                    <p className="text-sm text-muted-foreground mb-2">
-                                                        {formatPersianDate(next.date)}
-                                                        {next.startTime && ` - ساعت ${next.startTime}`}
-                                                    </p>
-
-                                                    <Link href={`/venues/${venue.id}`}>
-                                                        <Button size="sm" className="w-full">
-                                                            مشاهده جزئیات
-                                                        </Button>
-                                                    </Link>
-                                                </div>
-                                            )
-                                        })()}
-                                    </CardContent>
                                 </Card>
                             )}
 

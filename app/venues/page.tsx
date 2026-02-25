@@ -141,8 +141,10 @@ export default function VenuesPage() {
                 if (selectedSport !== 'all') params['filters[type][$eq]'] = selectedSport
                 if (sortBy && sortBy !== 'name') params.sort = sortBy
 
-                const response = await venuesApi.getVenues(params)
-                setVenues(response.data.data.data)
+                const response = await venuesApi.getVenues(params).then((response:any) => {
+                    setVenues(response.data.data.data)
+                })
+
             } catch (err) {
                 console.error('Failed to fetch venues', err)
                 setVenues([])

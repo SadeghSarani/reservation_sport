@@ -1,6 +1,8 @@
 'use client'
 
 import React from 'react'
+export interface TableRowProps
+    extends React.HTMLAttributes<HTMLTableRowElement> {}
 
 // Main Table component
 export const Table = ({ children }: { children: React.ReactNode }) => {
@@ -13,6 +15,7 @@ export const Table = ({ children }: { children: React.ReactNode }) => {
     )
 }
 
+
 // Table subcomponents
 export const TableHeader = ({ children }: { children: React.ReactNode }) => {
     return <thead className="bg-muted text-muted-foreground">{children}</thead>
@@ -22,9 +25,18 @@ export const TableBody = ({ children }: { children: React.ReactNode }) => {
     return <tbody className="divide-y divide-border">{children}</tbody>
 }
 
-export const TableRow = ({ children }: { children: React.ReactNode }) => {
-    return <tr>{children}</tr>
-}
+export const TableRow = React.forwardRef<
+    HTMLTableRowElement,
+    TableRowProps
+>(({ className, ...props }, ref) => {
+    return (
+        <tr
+            ref={ref}
+            className={className}
+            {...props}
+        />
+    )
+})
 
 export const TableHead = ({ children, className }: { children: React.ReactNode; className?: string }) => {
     return (

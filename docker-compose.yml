@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+  react-app:
+    build: .
+    container_name: react_app
+    ports:
+      - "3000:80"

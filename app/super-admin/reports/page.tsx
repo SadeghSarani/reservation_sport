@@ -53,7 +53,7 @@ export default function SuperAdminReportsPage() {
         const sportStats = (Object.keys(sportTypeLabels) as SportType[]).map((sport) => {
             const venues = mockVenues.filter((v) => v.sportType === sport)
             const reservations = mockReservations.filter((r) =>
-                venues.some((v) => v.id === r.venueId)
+                venues.some((v) => v.id === Number(r.venueId))
             )
             const revenue = reservations
                 .filter((r) => r.paymentStatus === 'paid')
@@ -70,7 +70,7 @@ export default function SuperAdminReportsPage() {
 
         // Top venues
         const venueStats = mockVenues.map((venue) => {
-            const reservations = mockReservations.filter((r) => r.venueId === venue.id)
+            const reservations = mockReservations.filter((r) => Number(r.venueId) === venue.id)
             const revenue = reservations
                 .filter((r) => r.paymentStatus === 'paid')
                 .reduce((sum, r) => sum + r.totalPrice, 0)

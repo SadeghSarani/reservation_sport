@@ -20,7 +20,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@ra
 
 const roleColors: Record<UserRole, string> = {
     user: 'bg-blue-500/10 text-blue-600',
-    admin: 'bg-orange-500/10 text-orange-600',
+    venue_admin: 'bg-orange-500/10 text-orange-600',
     superadmin: 'bg-purple-500/10 text-purple-600',
 }
 
@@ -62,7 +62,7 @@ export default function SuperAdminUsersPage() {
                                 </div>
                                 <div className="text-sm text-muted-foreground">کاربران عادی</div>
                             </div>
-                            <Badge variant="secondary" className={roleColors.user}>کاربر</Badge>
+                            <Badge variant="default" className={roleColors.user}>کاربر</Badge>
                         </div>
                     </CardContent>
                 </Card>
@@ -71,11 +71,11 @@ export default function SuperAdminUsersPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <div className="text-2xl font-bold">
-                                    {mockUsers.filter((u) => u.role === 'admin').length}
+                                    {mockUsers.filter((u) => u.role === 'venue_admin').length}
                                 </div>
                                 <div className="text-sm text-muted-foreground">مدیران سالن</div>
                             </div>
-                            <Badge variant="secondary" className={roleColors.admin}>مدیر</Badge>
+                            <Badge variant="default" className={roleColors.venue_admin}>مدیر</Badge>
                         </div>
                     </CardContent>
                 </Card>
@@ -88,7 +88,7 @@ export default function SuperAdminUsersPage() {
                                 </div>
                                 <div className="text-sm text-muted-foreground">مدیران کل</div>
                             </div>
-                            <Badge variant="secondary" className={roleColors.superadmin}>مدیر کل</Badge>
+                            <Badge variant="default" className={roleColors.superadmin}>مدیر کل</Badge>
                         </div>
                     </CardContent>
                 </Card>
@@ -149,8 +149,8 @@ export default function SuperAdminUsersPage() {
                                     </TableRow>
                                 ) : (
                                     filteredUsers.map((user) => {
-                                        const managedVenue = user.managedVenueId
-                                            ? mockVenues.find((v) => v.id === user.managedVenueId)
+                                        const managedVenue = 1
+                                            ? mockVenues.find((v) => v.id === Number(user.id))
                                             : null
                                         const reservationCount = mockReservations.filter((r) => r.userId === user.id).length
 
@@ -171,9 +171,9 @@ export default function SuperAdminUsersPage() {
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell dir="ltr" className="text-left">{user.phone}</TableCell>
+                                                <TableCell  className="text-left">{user.phone}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant="secondary" className={roleColors[user.role]}>
+                                                    <Badge variant="default" className={roleColors[user.role]}>
                                                         {roleLabels[user.role]}
                                                     </Badge>
                                                 </TableCell>

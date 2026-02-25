@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setIsLoading(true)
             authApi
                 .getProfile()
-                .then((res) => setUser(res.user))
+                .then((res) => setUser(res.user as User))
                 .catch(() => removeToken())
                 .finally(() => setIsLoading(false))
         }
@@ -36,12 +36,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const login = useCallback(async (email: string, password: string) => {
         setIsLoading(true)
+
         try {
-            const res = await authApi.login(email, password)
+            const res = await authApi.login(email, password) as {
+                success: boolean
+                user: User
+            }
+
             if (!res.success) return false
 
-            setUser(res.user)
+            setUser(res.user ?? null)
             return true
+
         } finally {
             setIsLoading(false)
         }
@@ -55,7 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const register = useCallback(async (name: string, email: string, phone: string,password: string) => {
         setIsLoading(true)
         try {
-            const res = await authApi.register(name, email, phone , password)
+            const res = await authApi.register(name, email, phone , password) as {
+                    success : boolean,
+                    user : User
+            }
+
             if (!res.success) return false
 
             setUser(res.user)

@@ -7,10 +7,30 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/lib/auth-context'
 import { Search, CheckCircle, XCircle, Eye, SlidersHorizontal, CalendarDays } from 'lucide-react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@radix-ui/react-select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/table'
 import { useToast } from '@/components/ui/use-toast'
 import { reservationApi } from '@/app/api/services/reservation.api'
+
+interface User {
+    name: string
+    phone: string
+}
+
+interface Reservation {
+    id: number
+    status: string
+    payment_status: string
+    start_at: string
+    end_at: string
+    type: string
+    total_price: number
+    created_at: string
+    user?: User
+}
+
+interface ReservationApiResponse {
+    data: Reservation[]
+}
 
 const statusColors: Record<string, string> = {
     pending:   'bg-amber-500/10 text-amber-500 border-amber-500/20',
@@ -40,9 +60,11 @@ const paymentStatusLabels: Record<string, string> = {
     refunded: 'مرجوع شده',
 }
 
+
+
 function SkeletonRow() {
     return (
-        <TableRow className="hover:bg-transparent">
+        <TableRow className={"hover:bg-transparent"}>
             {Array.from({ length: 9 }).map((_, i) => (
                 <TableCell key={i}>
                     <div className="h-4 bg-muted/60 rounded animate-pulse" style={{ width: `${60 + Math.random() * 40}%` }} />
@@ -64,8 +86,13 @@ export default function AdminReservationsPage() {
         const fetchReservations = async () => {
             setLoading(true)
             try {
-                const res = await reservationApi.getReservation()
+
+                const res = await reservationApi.getReservation() as {
+                    data: { data: any[] }
+                }
+
                 setReservations(res.data.data || [])
+
             } catch (e) {
                 console.error(e)
                 toast({ title: 'خطا', description: 'مشکل در دریافت رزروها ❌', variant: 'destructive' })
@@ -205,7 +232,7 @@ export default function AdminReservationsPage() {
                                         <TableCell className="text-sm text-foreground">
                                             {new Date(r.start_at).toLocaleDateString('fa-IR')}
                                         </TableCell>
-                                        <TableCell className="text-sm text-muted-foreground tabular-nums" dir="ltr">
+                                        <TableCell className="text-sm text-muted-foreground tabular-nums">
                                             {r.start_at && r.end_at
                                                 ? `${new Date(r.start_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })} – ${new Date(r.end_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}`
                                                 : '—'}
@@ -222,25 +249,25 @@ export default function AdminReservationsPage() {
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="outline" className={`text-xs font-medium px-2 py-0.5 ${statusColors[r.status]}`}>
+                                            <Badge  className={`text-xs font-medium px-2 py-0.5 ${statusColors[r.status]}`}>
                                                 {reservationStatusLabels[r.status]}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="secondary" className={`text-xs font-medium px-2 py-0.5 ${paymentColors[r.payment_status]}`}>
+                                            <Badge  className={`text-xs font-medium px-2 py-0.5 ${paymentColors[r.payment_status]}`}>
                                                 {paymentStatusLabels[r.payment_status]}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="pl-6">
                                             <div className="flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
-                                                <Button size="icon" variant="ghost" title="مشاهده" className="w-7 h-7">
+                                                <Button size="icon" variant="secondary" title="مشاهده" className="w-7 h-7">
                                                     <Eye className="w-3.5 h-3.5" />
                                                 </Button>
                                                 {r.status === 'pending' && (
                                                     <>
                                                         <Button
                                                             size="icon"
-                                                            variant="ghost"
+                                                            variant="outline"
                                                             title="تایید"
                                                             className="w-7 h-7 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10"
                                                         >
@@ -248,7 +275,7 @@ export default function AdminReservationsPage() {
                                                         </Button>
                                                         <Button
                                                             size="icon"
-                                                            variant="ghost"
+                                                            variant="outline"
                                                             title="رد"
                                                             className="w-7 h-7 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10"
                                                         >

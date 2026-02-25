@@ -68,6 +68,11 @@ const statCards = [
     },
 ]
 
+interface DashboardResponse {
+    stats: Record<string, any>
+    recentReservations: any[]
+}
+
 export default function AdminDashboard() {
     const { user } = useAuth()
     const [stats, setStats] = useState<any>({})
@@ -77,7 +82,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const response = await userApi.getAdminDashboardData()
+                const response = await userApi.getAdminDashboardData() as {data: DashboardResponse}
                 setStats(response.data.stats ?? {})
                 setRecentReservations(response.data.recentReservations ?? [])
             } catch (error) {
@@ -90,14 +95,6 @@ export default function AdminDashboard() {
         fetchDashboardData()
     }, [])
 
-    const venue = useMemo(() => {
-        if (!user?.managedVenueId) return mockVenues[0]
-        return mockVenues.find((v) => v.id === user.managedVenueId) || mockVenues[0]
-    }, [user])
-
-    const venueReservations = useMemo(() => {
-        return mockReservations.filter((r) => r.venueId === venue?.id)
-    }, [venue])
 
     return (
         <div className="space-y-8 p-1">
@@ -108,7 +105,7 @@ export default function AdminDashboard() {
                     داشبورد مدیریت
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                    {venue?.name} — خوش آمدید
+                    {user?.name} — خوش آمدید
                 </p>
             </div>
 
@@ -154,7 +151,7 @@ export default function AdminDashboard() {
                             </CardTitle>
                             <Link href="/admin/reservations">
                                 <Button
-                                    variant="ghost"
+                                    variant="primary"
                                     size="sm"
                                     className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
                                 >
@@ -207,10 +204,10 @@ export default function AdminDashboard() {
 
                                             {/* Status Badge */}
                                             <Badge
-                                                variant="outline"
+                                                variant="info"
                                                 className={`text-xs font-medium px-2 py-0.5 ${statusColors[reservation.status]}`}
                                             >
-                                                {reservationStatusLabels[reservation.status]}
+                                                {reservationStatusLabels[reservation.status as keyof typeof reservationStatusLabels]}
                                             </Badge>
 
                                             {/* Price */}

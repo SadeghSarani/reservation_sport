@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { venuesApi } from '@/app/api/services/venues.api'
 import { useToast } from '@/components/ui/use-toast'
-import { sportTypeLabels } from '@/lib/types'
+import {SportType, sportTypeLabels} from '@/lib/types'
 
 /* ===================== Types ===================== */
 
@@ -348,6 +348,13 @@ export default function CreateVenuePage() {
     const { toast, ToastViewport } = useToast()
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [isSaving, setIsSaving] = useState(false)
+    const [newId, setNewId] = useState(0)
+
+    interface Day {
+        id: number
+        holiday: number
+        day_jalali: string
+    }
 
     const [formData, setFormData] = useState({
         name: '', description: '', address: '',
@@ -433,10 +440,12 @@ export default function CreateVenuePage() {
 
         setIsSaving(true)
 
-        try {
-            const response = await venuesApi.createVenue(payload)
 
-            const newId = response.data.data.id
+
+        try {
+            const response = await venuesApi.createVenue(payload).then((response: any) => {
+                setNewId(response.data.data.id)
+            })
 
             // Upload images separately
             if (images.length > 0) {
@@ -489,7 +498,8 @@ export default function CreateVenuePage() {
     )
 
 
-    const [days, setDays] = useState<CalendarDay[]>([])
+
+    const [days, setDays] = useState<Day[]>([])
     const [selectedDays, setSelectedDays] = useState<number[]>([])
     const [isLoadingDays, setIsLoadingDays] = useState(false)
 
@@ -497,8 +507,9 @@ export default function CreateVenuePage() {
         try {
             setIsLoadingDays(true)
 
-            const response = await venuesApi.getCalendarData()
-            setDays(response.data.data)
+            const response = await venuesApi.getCalendarData().then((response:any) => {
+                setDays(response.data.data)
+            })
 
         } catch (error) {
             console.error('Days fetch error:', error)
@@ -564,7 +575,7 @@ export default function CreateVenuePage() {
                             </div>
                             {formData.type && (
                                 <Badge className="bg-white/20 text-white border-white/30 text-xs">
-                                    {sportTypeLabels[formData.type]}
+\                                    {sportTypeLabels[formData.type as SportType]}
                                 </Badge>
                             )}
                         </div>

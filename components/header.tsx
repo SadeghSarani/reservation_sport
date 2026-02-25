@@ -83,18 +83,6 @@ export function Header() {
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    {/* Demo: Role switcher */}
-                                    <div className="px-2 py-1.5 text-xs text-muted-foreground">تغییر نقش (دمو):</div>
-                                    <DropdownMenuItem onClick={() => switchRole('user')} className="cursor-pointer">
-                                        کاربر عادی
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => switchRole('admin')} className="cursor-pointer">
-                                        مدیر سالن
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => switchRole('superadmin')} className="cursor-pointer">
-                                        مدیر کل
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer">
                                         <LogOut className="w-4 h-4 ml-2" />
                                         <span>خروج</span>
@@ -157,7 +145,7 @@ export function Header() {
                                         <Link href={getDashboardLink()} onClick={() => setMobileMenuOpen(false)}>
                                             <Button variant="outline" className="w-full bg-transparent">داشبورد</Button>
                                         </Link>
-                                        <Button variant="destructive" onClick={logout} className="w-full">
+                                        <Button variant="danger" onClick={logout} className="w-full">
                                             خروج
                                         </Button>
                                     </>

@@ -56,8 +56,10 @@ export default function AdminVenuesPage() {
     useEffect(() => {
         const fetchVenues = async () => {
             try {
-                const response = await venuesApi.getAdminVenues()
-                setVenues(response.data.data ?? [])
+                const response = await venuesApi.getAdminVenues().then((response : any) => {
+                    setVenues(response.data.data ?? [])
+                })
+
             } catch (error) {
                 console.error('Failed to load venues:', error)
             } finally {
@@ -137,7 +139,6 @@ export default function AdminVenuesPage() {
                                         {/* Type */}
                                         <TableCell>
                                             <Badge
-                                                variant="outline"
                                                 className={`text-xs font-medium px-2 py-0.5 ${venueTypeColors[venue.type] ?? 'bg-muted/40 text-muted-foreground border-border/40'}`}
                                             >
                                                 {venueTypeLabels[venue.type] ?? 'نامشخص'}
@@ -181,12 +182,12 @@ export default function AdminVenuesPage() {
                                         {/* Status */}
                                         <TableCell>
                                             {venue.is_active ? (
-                                                <Badge variant="outline" className="gap-1 text-xs font-medium px-2 py-0.5 bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                                                <Badge variant="success" className="gap-1 text-xs font-medium px-2 py-0.5 bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
                                                     <Check className="w-3 h-3" />
                                                     فعال
                                                 </Badge>
                                             ) : (
-                                                <Badge variant="outline" className="gap-1 text-xs font-medium px-2 py-0.5 bg-rose-500/10 text-rose-400 border-rose-500/20">
+                                                <Badge variant="error" className="gap-1 text-xs font-medium px-2 py-0.5 bg-rose-500/10 text-rose-400 border-rose-500/20">
                                                     <X className="w-3 h-3" />
                                                     غیرفعال
                                                 </Badge>
@@ -207,7 +208,7 @@ export default function AdminVenuesPage() {
                                                 </Button>
                                                 <Button
                                                     size="icon"
-                                                    variant="ghost"
+                                                    variant="outline"
                                                     title="حذف"
                                                     className="w-7 h-7 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10"
                                                 >

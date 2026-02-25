@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import Layout from "@/components/Layout";
+import Layout from "./layout";
 
 interface Indoor {
     id: number;

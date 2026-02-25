@@ -52,8 +52,8 @@ export default function AdminLayout({
                 {/* Mobile Header */}
                 <header className="lg:hidden sticky top-0 z-40 bg-card border-b border-border p-4 flex items-center gap-4">
                     <Button
-                        variant="ghost"
-                        size="icon"
+                        variant="primary"
+                        size="sm"
                         onClick={() => setSidebarOpen(true)}
                     >
                         <Menu className="w-5 h-5" />

@@ -113,7 +113,8 @@ export function AdminSidebar({ type }: AdminSidebarProps) {
             {/* Footer */}
             <div className="p-4 border-t border-sidebar-border space-y-2">
                 <Link href="/">
-                    <Button variant="ghost" className="w-full justify-start gap-2 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent">
+                    <Button variant="ghost"
+                            className="w-full justify-start gap-2 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent mb-5">
                         <Home className="w-5 h-5" />
                         صفحه اصلی
                     </Button>

@@ -8,25 +8,22 @@ export const mockUsers: User[] = [
         phone: '09121234567',
         role: 'superadmin',
         createdAt: '2024-01-01',
-        avatar: undefined,
     },
     {
         id: '2',
         name: 'محمد رضایی',
         email: 'mohammad@example.com',
         phone: '09129876543',
-        role: 'admin',
+        role: 'superadmin',
         createdAt: '2024-02-15',
-        managedVenueId: '1',
     },
     {
         id: '3',
         name: 'زهرا حسینی',
         email: 'zahra@example.com',
         phone: '09123456789',
-        role: 'admin',
+        role: 'venue_admin',
         createdAt: '2024-03-10',
-        managedVenueId: '2',
     },
     {
         id: '4',
@@ -46,9 +43,10 @@ export const mockUsers: User[] = [
     },
 ]
 
+// @ts-ignore
 export const mockVenues: Venue[] = [
     {
-        id: '1',
+        id: 1,
         name: 'سالن فوتسال المپیک',
         sportType: 'futsal',
         description: 'سالن فوتسال مجهز با کفپوش استاندارد و سیستم روشنایی حرفه‌ای',
@@ -65,9 +63,10 @@ export const mockVenues: Venue[] = [
         isActive: true,
         adminId: '2',
         createdAt: '2024-01-10',
+        price: 0
     },
     {
-        id: '2',
+        id: 6,
         name: 'سالن والیبال آزادی',
         sportType: 'volleyball',
         description: 'سالن والیبال با استانداردهای بین‌المللی و تور حرفه‌ای',
@@ -84,9 +83,10 @@ export const mockVenues: Venue[] = [
         isActive: true,
         adminId: '3',
         createdAt: '2024-01-15',
+        price: 0
     },
     {
-        id: '3',
+        id: 3,
         name: 'سالن بسکتبال نور',
         sportType: 'basketball',
         description: 'زمین بسکتبال با کفپوش چوبی و حلقه‌های استاندارد NBA',
@@ -102,9 +102,10 @@ export const mockVenues: Venue[] = [
         amenities: ['رختکن', 'دوش', 'پارکینگ', 'کافه'],
         isActive: true,
         createdAt: '2024-02-01',
+        price: 0
     },
     {
-        id: '4',
+        id: 4,
         name: 'سالن بدمینتون پارسیان',
         sportType: 'badminton',
         description: 'سالن بدمینتون با 4 زمین استاندارد و ارتفاع مناسب',
@@ -120,9 +121,10 @@ export const mockVenues: Venue[] = [
         amenities: ['رختکن', 'دوش', 'فروشگاه تجهیزات'],
         isActive: true,
         createdAt: '2024-02-15',
+        price: 0
     },
     {
-        id: '5',
+        id: 5,
         name: 'باشگاه بدنسازی قهرمان',
         sportType: 'gym',
         description: 'باشگاه مجهز با دستگاه‌های حرفه‌ای و مربیان مجرب',
@@ -138,9 +140,10 @@ export const mockVenues: Venue[] = [
         amenities: ['رختکن', 'دوش', 'سونا', 'استخر', 'کافه سالم'],
         isActive: true,
         createdAt: '2024-03-01',
+        price: 0
     },
     {
-        id: '6',
+        id: 6,
         name: 'سالن فوتسال ستارگان',
         sportType: 'futsal',
         description: 'سالن فوتسال با چمن مصنوعی درجه یک',
@@ -156,6 +159,7 @@ export const mockVenues: Venue[] = [
         amenities: ['رختکن', 'دوش', 'پارکینگ', 'بوفه', 'سیستم صوتی'],
         isActive: true,
         createdAt: '2024-03-15',
+        price: 0
     },
 ]
 
@@ -302,7 +306,7 @@ export function generateTimeSlots(venue: Venue, date: string): { time: string; a
         const timeStr = `${hour.toString().padStart(2, '0')}:00`
         // Check if there's a reservation for this slot
         const isReserved = mockReservations.some(
-            (r) => r.venueId === venue.id && r.date === date && r.startTime === timeStr && r.status !== 'cancelled'
+            (r) => Number(r.venueId) === venue.id && r.date === date && r.startTime === timeStr && r.status !== 'cancelled'
         )
         slots.push({
             time: timeStr,

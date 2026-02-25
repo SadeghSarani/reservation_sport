@@ -100,7 +100,7 @@ export default function SuperAdminVenuesPage() {
                                 ) : (
                                     filteredVenues.map((venue) => {
                                         const admin = mockUsers.find((u) => u.id === venue.adminId)
-                                        const reservationCount = mockReservations.filter((r) => r.venueId === venue.id).length
+                                        const reservationCount = mockReservations.filter((r) => Number(r.venueId) === venue.id).length
 
                                         return (
                                             <TableRow key={venue.id}>
@@ -113,7 +113,7 @@ export default function SuperAdminVenuesPage() {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant="secondary">{sportTypeLabels[venue.sportType]}</Badge>
+                                                    <Badge variant="default">{sportTypeLabels[venue.sportType]}</Badge>
                                                 </TableCell>
                                                 <TableCell>{venue.city}</TableCell>
                                                 <TableCell>
@@ -130,7 +130,7 @@ export default function SuperAdminVenuesPage() {
                                                 <TableCell>{reservationCount}</TableCell>
                                                 <TableCell>
                                                     <Badge
-                                                        variant={venue.isActive ? 'default' : 'secondary'}
+                                                        variant={venue.isActive ? 'default' : 'success'}
                                                         className={venue.isActive ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}
                                                     >
                                                         {venue.isActive ? 'فعال' : 'غیرفعال'}

@@ -17,11 +17,11 @@ class VenuesApi extends BaseApi {
         return await this.get(`/venues/${id}`)
     }
 
-    async getAdminSingleVenue(id: number) {
+    async getAdminSingleVenue(id: string) {
         return await this.get(`/venues/manage/admin/${id}`)
     }
 
-    async getTimeCalendar(calendarId: number, venueId: number) {
+    async getTimeCalendar(calendarId: number, venueId: string) {
         return await this.get(`/venues/time/${venueId}`, {
             calendar_id: calendarId
         })

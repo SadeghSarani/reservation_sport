@@ -6,7 +6,7 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { mockReservations, mockVenues, formatPrice, formatPersianDate } from '@/lib/mock-data'
-import { reservationStatusLabels, sportTypeLabels } from '@/lib/types'
+import {reservationStatusLabels, SportType, sportTypeLabels} from '@/lib/types'
 import { useAuth } from '@/lib/auth-context'
 import {
     Calendar, Clock, MapPin, Plus,
@@ -123,11 +123,11 @@ export function ReservationCard({ reservation, index }: { reservation: any; inde
                     <div className="md:w-56 lg:w-64 flex-shrink-0 p-5 bg-muted/30 border-b md:border-b-0 md:border-l border-border flex flex-col justify-between gap-4">
                         <div className="flex items-start gap-3">
                             <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-lg ${sportBg}`}>
-                                {sportTypeLabels[venue.type]?.charAt(0)}
+                                {sportTypeLabels[venue.type as SportType]?.charAt(0)}
                             </div>
                             <div className="min-w-0">
                                 <p className="font-bold text-foreground text-sm leading-tight line-clamp-2">{venue.name}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{sportTypeLabels[venue.type]}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{sportTypeLabels[venue.type as SportType]}</p>
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1.5">
                                     <MapPin className="w-3 h-3 flex-shrink-0" />
                                     <span className="truncate">{venue.address}</span>
@@ -245,8 +245,9 @@ export default function ReservationsPage() {
     useEffect(() => {
         const fetchReservations = async () => {
             try {
-                const response = await reservationApi.getReservation()
-                setUserReservations(response.data.data)
+                const response = await reservationApi.getReservation().then((response : any) => {
+                    setUserReservations(response.data.data)
+                })
             } catch (err) {
                 console.error('Failed to fetch reservations', err)
                 setUserReservations([])
